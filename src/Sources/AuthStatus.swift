@@ -1,9 +1,27 @@
 import Foundation
 
+enum ServiceType: String, CaseIterable {
+    case claude = "claude"
+    case codex = "codex"
+    case gemini = "gemini"
+    case qwen = "qwen"
+    case antigravity = "antigravity"
+    
+    var displayName: String {
+        switch self {
+        case .claude: return "Claude Code"
+        case .codex: return "Codex"
+        case .gemini: return "Gemini"
+        case .qwen: return "Qwen"
+        case .antigravity: return "Antigravity"
+        }
+    }
+}
+
 struct AuthStatus {
     var isAuthenticated: Bool
     var email: String?
-    var type: String
+    var type: ServiceType
     var expired: Date?
     
     var isExpired: Bool {
@@ -25,11 +43,11 @@ struct AuthStatus {
 }
 
 class AuthManager: ObservableObject {
-    @Published var claudeStatus = AuthStatus(isAuthenticated: false, type: "claude")
-    @Published var codexStatus = AuthStatus(isAuthenticated: false, type: "codex")
-    @Published var geminiStatus = AuthStatus(isAuthenticated: false, type: "gemini")
-    @Published var qwenStatus = AuthStatus(isAuthenticated: false, type: "qwen")
-    @Published var antigravityStatus = AuthStatus(isAuthenticated: false, type: "antigravity")
+    @Published var claudeStatus = AuthStatus(isAuthenticated: false, type: .claude)
+    @Published var codexStatus = AuthStatus(isAuthenticated: false, type: .codex)
+    @Published var geminiStatus = AuthStatus(isAuthenticated: false, type: .gemini)
+    @Published var qwenStatus = AuthStatus(isAuthenticated: false, type: .qwen)
+    @Published var antigravityStatus = AuthStatus(isAuthenticated: false, type: .antigravity)
     
     func checkAuthStatus() {
         let authDir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".cli-proxy-api")
@@ -50,7 +68,8 @@ class AuthManager: ObservableObject {
                 NSLog("[AuthStatus] Checking file: %@", file.lastPathComponent)
                 if let data = try? Data(contentsOf: file),
                    let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let type = json["type"] as? String {
+                   let type = json["type"] as? String,
+                   let serviceType = ServiceType(rawValue: type.lowercased()) {
                     NSLog("[AuthStatus] Found type '%@' in %@", type, file.lastPathComponent)
                     
                     let email = json["email"] as? String
@@ -65,34 +84,33 @@ class AuthManager: ObservableObject {
                     let status = AuthStatus(
                         isAuthenticated: true,
                         email: email,
-                        type: type,
+                        type: serviceType,
                         expired: expiredDate
                     )
                     
                     DispatchQueue.main.async {
-                        switch type.lowercased() {
-                        case "claude":
+                        
+                        switch serviceType {
+                        case .claude:
                             foundClaude = true
                             self.claudeStatus = status
                             NSLog("[AuthStatus] Found Claude auth: %@", email ?? "unknown")
-                        case "codex":
+                        case .codex:
                             foundCodex = true
                             self.codexStatus = status
                             NSLog("[AuthStatus] Found Codex auth: %@", email ?? "unknown")
-                        case "gemini":
+                        case .gemini:
                             foundGemini = true
                             self.geminiStatus = status
                             NSLog("[AuthStatus] Found Gemini auth: %@", email ?? "unknown")
-                        case "qwen":
+                        case .qwen:
                             foundQwen = true
                             self.qwenStatus = status
                             NSLog("[AuthStatus] Found Qwen auth: %@", email ?? "unknown")
-                        case "antigravity":
+                        case .antigravity:
                             foundAntigravity = true
                             self.antigravityStatus = status
                             NSLog("[AuthStatus] Found Antigravity auth: %@", email ?? "unknown")
-                        default:
-                            break
                         }
                     }
                 }
@@ -102,34 +120,34 @@ class AuthManager: ObservableObject {
             DispatchQueue.main.async {
                 if !foundClaude {
                     NSLog("[AuthStatus] No Claude auth file found - resetting status")
-                    self.claudeStatus = AuthStatus(isAuthenticated: false, type: "claude")
+                    self.claudeStatus = AuthStatus(isAuthenticated: false, type: .claude)
                 }
                 if !foundCodex {
                     NSLog("[AuthStatus] No Codex auth file found - resetting status")
-                    self.codexStatus = AuthStatus(isAuthenticated: false, type: "codex")
+                    self.codexStatus = AuthStatus(isAuthenticated: false, type: .codex)
                 }
                 if !foundGemini {
                     NSLog("[AuthStatus] No Gemini auth file found - resetting status")
-                    self.geminiStatus = AuthStatus(isAuthenticated: false, type: "gemini")
+                    self.geminiStatus = AuthStatus(isAuthenticated: false, type: .gemini)
                 }
                 if !foundQwen {
                     NSLog("[AuthStatus] No Qwen auth file found - resetting status")
-                    self.qwenStatus = AuthStatus(isAuthenticated: false, type: "qwen")
+                    self.qwenStatus = AuthStatus(isAuthenticated: false, type: .qwen)
                 }
                 if !foundAntigravity {
                     NSLog("[AuthStatus] No Antigravity auth file found - resetting status")
-                    self.antigravityStatus = AuthStatus(isAuthenticated: false, type: "antigravity")
+                    self.antigravityStatus = AuthStatus(isAuthenticated: false, type: .antigravity)
                 }
             }
         } catch {
             NSLog("[AuthStatus] Error checking auth status: %@", error.localizedDescription)
             // Reset all on error
             DispatchQueue.main.async {
-                self.claudeStatus = AuthStatus(isAuthenticated: false, type: "claude")
-                self.codexStatus = AuthStatus(isAuthenticated: false, type: "codex")
-                self.geminiStatus = AuthStatus(isAuthenticated: false, type: "gemini")
-                self.qwenStatus = AuthStatus(isAuthenticated: false, type: "qwen")
-                self.antigravityStatus = AuthStatus(isAuthenticated: false, type: "antigravity")
+                self.claudeStatus = AuthStatus(isAuthenticated: false, type: .claude)
+                self.codexStatus = AuthStatus(isAuthenticated: false, type: .codex)
+                self.geminiStatus = AuthStatus(isAuthenticated: false, type: .gemini)
+                self.qwenStatus = AuthStatus(isAuthenticated: false, type: .qwen)
+                self.antigravityStatus = AuthStatus(isAuthenticated: false, type: .antigravity)
             }
         }
     }

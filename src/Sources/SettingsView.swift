@@ -289,7 +289,6 @@ struct SettingsView: View {
                 }
             }
             .formStyle(.grouped)
-            .scrollDisabled(true)
 
             Spacer()
                 .frame(height: 12)
@@ -443,7 +442,7 @@ struct SettingsView: View {
 
     private func disconnectClaudeCode() {
         isAuthenticatingClaude = true
-        performDisconnect(for: "claude", serviceName: "Claude Code") { success, message in
+        performDisconnect(for: .claude) { success, message in
             self.isAuthenticatingClaude = false
             self.authResultSuccess = success
             self.authResultMessage = message
@@ -476,7 +475,7 @@ struct SettingsView: View {
 
     private func disconnectCodex() {
         isAuthenticatingCodex = true
-        performDisconnect(for: "codex", serviceName: "Codex") { success, message in
+        performDisconnect(for: .codex) { success, message in
             self.isAuthenticatingCodex = false
             self.authResultSuccess = success
             self.authResultMessage = message
@@ -509,7 +508,7 @@ struct SettingsView: View {
 
     private func disconnectGemini() {
         isAuthenticatingGemini = true
-        performDisconnect(for: "gemini", serviceName: "Gemini") { success, message in
+        performDisconnect(for: .gemini) { success, message in
             self.isAuthenticatingGemini = false
             self.authResultSuccess = success
             self.authResultMessage = message
@@ -546,7 +545,7 @@ struct SettingsView: View {
 
     private func disconnectQwen() {
         isAuthenticatingQwen = true
-        performDisconnect(for: "qwen", serviceName: "Qwen") { success, message in
+        performDisconnect(for: .qwen) { success, message in
             self.isAuthenticatingQwen = false
             self.authResultSuccess = success
             self.authResultMessage = message
@@ -579,7 +578,7 @@ struct SettingsView: View {
 
     private func disconnectAntigravity() {
         isAuthenticatingAntigravity = true
-        performDisconnect(for: "antigravity", serviceName: "Antigravity") { success, message in
+        performDisconnect(for: .antigravity) { success, message in
             self.isAuthenticatingAntigravity = false
             self.authResultSuccess = success
             self.authResultMessage = message
@@ -622,7 +621,7 @@ struct SettingsView: View {
         fileMonitor = nil
     }
 
-    private func performDisconnect(for serviceType: String, serviceName: String, completion: @escaping (Bool, String) -> Void) {
+    private func performDisconnect(for serviceType: ServiceType, completion: @escaping (Bool, String) -> Void) {
         let authDir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".cli-proxy-api")
         let wasRunning = serverManager.isRunning
         let manager = serverManager
@@ -645,7 +644,7 @@ struct SettingsView: View {
                             let data = try Data(contentsOf: fileURL, options: [.mappedIfSafe])
                             guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                                   let type = json["type"] as? String,
-                                  type.lowercased() == serviceType.lowercased() else {
+                                  type.lowercased() == serviceType.rawValue else {
                                 continue
                             }
                             
@@ -656,15 +655,15 @@ struct SettingsView: View {
                         if let targetURL = targetURL {
                             try FileManager.default.removeItem(at: targetURL)
                             NSLog("[Disconnect] Deleted auth file: %@", targetURL.path)
-                            disconnectResult = (true, "\(serviceName) disconnected successfully")
+                            disconnectResult = (true, "\(serviceType.displayName) disconnected successfully")
                         } else {
-                            disconnectResult = (false, "No \(serviceName) credentials were found.")
+                            disconnectResult = (false, "No \(serviceType.displayName) credentials were found.")
                         }
                     } else {
                         disconnectResult = (false, "Unable to access credentials directory.")
                     }
                 } catch {
-                    disconnectResult = (false, "Failed to disconnect \(serviceName): \(error.localizedDescription)")
+                    disconnectResult = (false, "Failed to disconnect \(serviceType.displayName): \(error.localizedDescription)")
                 }
                 
                 DispatchQueue.main.async {
