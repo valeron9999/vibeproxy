@@ -24,6 +24,13 @@ struct AuthStatus {
     var type: ServiceType
     var expired: Date?
     
+    init(isAuthenticated: Bool, email: String? = nil, type: ServiceType, expired: Date? = nil) {
+        self.isAuthenticated = isAuthenticated
+        self.email = email
+        self.type = type
+        self.expired = expired
+    }
+    
     var isExpired: Bool {
         guard let expired = expired else { return false }
         return expired < Date()
