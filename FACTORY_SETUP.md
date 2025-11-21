@@ -19,6 +19,7 @@ VibeProxy manages OAuth tokens, auto-refreshes them, routes requests, and handle
 - macOS 13.0+ (Ventura or later)
 - Active **Claude Code Pro/Max** subscription for Anthropic access
 - Active **ChatGPT Plus/Pro** subscription for OpenAI Codex access
+- **Google Cloud account** with Gemini API access (optional)
 - Factory CLI installed: `curl -fsSL https://app.factory.ai/cli | sh`
 
 ## Step 1: Install VibeProxy
@@ -41,6 +42,10 @@ Once VibeProxy is running:
 4. Click **"Connect"** next to Codex
    - Follow the same browser authentication process
    - Wait for VibeProxy to confirm the connection
+5. **(Optional)** Click **"Connect"** next to Gemini
+   - Sign in with your Google account
+   - Select a Google Cloud project (or accept the default)
+   - VibeProxy will automatically save your credentials
 
 ✅ The server starts automatically and runs on port **8317**
 
@@ -212,6 +217,35 @@ Edit your Factory configuration file at `~/.factory/config.json` (if the file do
       "base_url": "http://localhost:8317/v1",
       "api_key": "dummy-not-used",
       "provider": "openai"
+    },
+
+    {
+      "model_display_name": "Gemini 3 Pro Preview",
+      "model": "gemini-3-pro-preview",
+      "base_url": "http://localhost:8317/v1",
+      "api_key": "dummy-not-used",
+      "provider": "openai"
+    },
+    {
+      "model_display_name": "Gemini 2.5 Pro",
+      "model": "gemini-2.5-pro",
+      "base_url": "http://localhost:8317/v1",
+      "api_key": "dummy-not-used",
+      "provider": "openai"
+    },
+    {
+      "model_display_name": "Gemini 2.5 Flash",
+      "model": "gemini-2.5-flash",
+      "base_url": "http://localhost:8317/v1",
+      "api_key": "dummy-not-used",
+      "provider": "openai"
+    },
+    {
+      "model_display_name": "Gemini 2.5 Flash Lite",
+      "model": "gemini-2.5-flash-lite",
+      "base_url": "http://localhost:8317/v1",
+      "api_key": "dummy-not-used",
+      "provider": "openai"
     }
   ]
 }
@@ -230,8 +264,9 @@ Edit your Factory configuration file at `~/.factory/config.json` (if the file do
    ```
    Then choose from:
    - `claude-sonnet-4-5-20250929` (Claude 4.5 Sonnet)
-   - `claude-opus-4-1-20250805`
+   - `claude-opus-4-1-20250805` (Claude Opus 4.1)
    - `gpt-5`, `gpt-5.1`, `gpt-5-codex`, `gpt-5.1-codex`, etc.
+   - `gemini-2.5-pro`, `gemini-3-pro-preview`, etc.
 
 3. **Start coding!** Factory will now route all requests through VibeProxy, which handles authentication automatically.
 
@@ -246,6 +281,12 @@ Edit your Factory configuration file at `~/.factory/config.json` (if the file do
     - `*-thinking-4000` - "Think" mode (~4K tokens)
     - `*-thinking-10000` - "Think harder" mode (~10K tokens)
     - `*-thinking-32000` - "Ultra think" mode (~32K tokens)
+
+### Gemini Models
+- `gemini-3-pro-preview` - Gemini 3 Pro (Preview, most advanced)
+- `gemini-2.5-pro` - Gemini 2.5 Pro (Most capable production model)
+- `gemini-2.5-flash` - Gemini 2.5 Flash (Fast and efficient)
+- `gemini-2.5-flash-lite` - Gemini 2.5 Flash Lite (Lightweight and fastest)
 
 ### OpenAI Models
 - `gpt-5` - Standard GPT-5
@@ -281,15 +322,16 @@ No manual CLIProxyAPI update is required—VibeProxy automatically keeps CLIProx
 
 | Problem | Solution |
 |---------|----------|
-| Can't connect to Claude/Codex | Re-click "Connect" in VibeProxy settings |
+| Can't connect to Claude/Codex/Gemini | Re-click "Connect" in VibeProxy settings |
 | Factory shows 404 errors | Make sure VibeProxy server is running (check menu bar) |
 | Authentication expired | Disconnect and reconnect the service in VibeProxy |
 | Port 8317 already in use | Quit any other instances of VibeProxy or CLIProxyAPI |
+| Gemini returns 401 errors | Verify your Google Cloud project has Gemini API enabled |
 
 ### Verification Checklist
 
 1. ✅ VibeProxy is running (menu bar icon shows green)
-2. ✅ Both Claude and Codex show as "Connected" in settings
+2. ✅ Services (Claude, Codex, and optionally Gemini) show as "Connected" in settings
 3. ✅ Factory CLI config has the custom models configured
 4. ✅ `droid` can select your custom models
 5. ✅ Test with a simple prompt: "what day is it?"
