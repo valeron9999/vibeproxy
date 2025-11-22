@@ -71,6 +71,50 @@ struct SettingsView: View {
 
                 Section("Services") {
                 HStack {
+                    if let nsImage = IconCatalog.shared.image(named: "icon-antigravity.png", resizedTo: NSSize(width: 20, height: 20), template: true) {
+                        Image(nsImage: nsImage)
+                            .resizable()
+                            .renderingMode(.template)
+                            .frame(width: 20, height: 20)
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Antigravity")
+                        if authManager.antigravityStatus.isAuthenticated {
+                            Text(authManager.antigravityStatus.email ?? "Connected")
+                                .font(.caption2)
+                                .foregroundColor(authManager.antigravityStatus.isExpired ? .red : .green)
+                            if authManager.antigravityStatus.isExpired {
+                                Text("(expired)")
+                                    .font(.caption2)
+                                    .foregroundColor(.red)
+                            }
+                        }
+                    }
+                    Spacer()
+                    if isAuthenticatingAntigravity {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        if authManager.antigravityStatus.isAuthenticated {
+                            if authManager.antigravityStatus.isExpired {
+                                Button("Reconnect") {
+                                    connectAntigravity()
+                                }
+                            } else {
+                                Button("Disconnect") {
+                                    disconnectAntigravity()
+                                }
+                            }
+                        } else {
+                            Button("Connect") {
+                                connectAntigravity()
+                            }
+                        }
+                    }
+                }
+                .help("Antigravity is a Google-hosted service that provides OAuth-based access to various AI models, including Gemini and Claude. One login gives you access to multiple AI services.")
+
+                HStack {
                     if let nsImage = IconCatalog.shared.image(named: "icon-claude.png", resizedTo: NSSize(width: 20, height: 20), template: true) {
                         Image(nsImage: nsImage)
                             .resizable()
@@ -242,50 +286,6 @@ struct SettingsView: View {
                         }
                     }
                 }
-
-                HStack {
-                    if let nsImage = IconCatalog.shared.image(named: "icon-antigravity.png", resizedTo: NSSize(width: 20, height: 20), template: true) {
-                        Image(nsImage: nsImage)
-                            .resizable()
-                            .renderingMode(.template)
-                            .frame(width: 20, height: 20)
-                    }
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Antigravity")
-                        if authManager.antigravityStatus.isAuthenticated {
-                            Text(authManager.antigravityStatus.email ?? "Connected")
-                                .font(.caption2)
-                                .foregroundColor(authManager.antigravityStatus.isExpired ? .red : .green)
-                            if authManager.antigravityStatus.isExpired {
-                                Text("(expired)")
-                                    .font(.caption2)
-                                    .foregroundColor(.red)
-                            }
-                        }
-                    }
-                    Spacer()
-                    if isAuthenticatingAntigravity {
-                        ProgressView()
-                            .controlSize(.small)
-                    } else {
-                        if authManager.antigravityStatus.isAuthenticated {
-                            if authManager.antigravityStatus.isExpired {
-                                Button("Reconnect") {
-                                    connectAntigravity()
-                                }
-                            } else {
-                                Button("Disconnect") {
-                                    disconnectAntigravity()
-                                }
-                            }
-                        } else {
-                            Button("Connect") {
-                                connectAntigravity()
-                            }
-                        }
-                    }
-                }
-                .help("Antigravity is a Google-hosted service that provides OAuth-based access to various AI models, including Gemini and Claude. One login gives you access to multiple AI services.")
                 }
             }
             .formStyle(.grouped)
@@ -350,7 +350,7 @@ struct SettingsView: View {
             }
             .padding(.bottom, 12)
         }
-        .frame(width: 480, height: 590)
+        .frame(width: 480, height: 540)
         .sheet(isPresented: $showingQwenEmailPrompt) {
             VStack(spacing: 16) {
                 Text("Qwen Account Email")
