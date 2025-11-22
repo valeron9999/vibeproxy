@@ -78,15 +78,20 @@ jobs:
           fi
           
           echo "Extracting..."
-          # Get the filename inside the tarball
-          EXTRACTED_FILE=$(tar -tf "$FILENAME" | head -n 1)
+          tar -xzf "$FILENAME"
+          
+          # Find the binary file (exclude LICENSE, README, and other docs)
+          # Look for files in the tarball that don't have common documentation extensions
+          EXTRACTED_FILE=$(tar -tf "$FILENAME" | grep -v -E '(LICENSE|README|\.md$|\.txt$)' | head -n 1)
           
           if [ -z "$EXTRACTED_FILE" ]; then
-             echo "Error: Tarball is empty or list failed" >&2
+             echo "Error: Could not find binary in tarball" >&2
+             echo "Tarball contents:" >&2
+             tar -tf "$FILENAME" >&2
              exit 1
           fi
-
-          tar -xzf "$FILENAME"
+          
+          echo "Found binary: $EXTRACTED_FILE"
           
           if [ ! -f "$EXTRACTED_FILE" ]; then
              echo "Error: Extraction failed, $EXTRACTED_FILE not found" >&2
