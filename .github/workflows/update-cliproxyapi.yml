@@ -128,7 +128,7 @@ jobs:
           
           # Remove known unwanted files from the CLIProxyAPI tarball
           rm -f config.example.yaml config.yaml
-          rm -f README_CN.md LICENSE
+          rm -f README.md README_CN.md LICENSE
           
           # List any remaining files that might have been extracted (for debugging)
           if [ -n "$(git status --porcelain | grep -v 'src/Sources/Resources/cli-proxy-api')" ]; then
