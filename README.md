@@ -11,12 +11,9 @@
 <a href="https://github.com/automazeio/vibeproxy"><img alt="Star this repo" src="https://img.shields.io/github/stars/automazeio/vibeproxy.svg?style=social&amp;label=Star%20this%20repo&amp;maxAge=60" style="max-width: 100%;"></a></p>
 </p>
 
-**Stop paying twice for AI.** VibeProxy is a beautiful native macOS menu bar app that lets you use your existing Claude Code, ChatGPT, **Gemini**, and **Qwen** subscriptions with powerful AI coding tools like **[Factory Droids](https://app.factory.ai/r/FM8BJHFQ)** – no separate API keys required.
+**Stop paying twice for AI.** VibeProxy is a beautiful native macOS menu bar app that lets you use your existing Claude Code, ChatGPT, **Gemini**, **Qwen**, and **Antigravity** subscriptions with powerful AI coding tools like **[Factory Droids](https://app.factory.ai/r/FM8BJHFQ)** – no separate API keys required.
 
 Built on [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI), it handles OAuth authentication, token management, and API routing automatically. One click to authenticate, zero friction to code.
-
-> [!Warning]
-> ⚠️ **NOTE ON GEMINI 3 PRO**: Google's newest model (released Nov 18, 2025) requires the Vertex AI API and is not yet supported in CLIProxyAPI 6.5.1. Support is expected any day now. To prepare, enable the [Vertex AI API](https://console.cloud.google.com/apis/library/aiplatform.googleapis.com) in your Google Cloud project.
 
 
 <p align="center">
@@ -25,6 +22,8 @@ Built on [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI), it handles
 </p>
 
 > [!NOTE]
+> 📣 **NEW: Gemini 3 Pro Support via Antigravity! 🚀** VibeProxy v1.0.9+ now supports Google's latest Gemini 3 Pro models through Antigravity authentication. Connect with your Google account to access `gemini-3-pro-high`, `gemini-3-pro-low`, and `gemini-3-pro-image`. See the [Factory Setup Guide](FACTORY_SETUP.md#step-2-connect-your-accounts) for configuration details.
+>
 > 📣 **NEW: Auto-Updates! 🔄** VibeProxy now automatically checks for and downloads the latest CLIProxyAPI binary updates in the background. You'll always have support for the newest models without lifting a finger.
 >
 > 📣 **NEW: GPT-5.1 & GPT-5.1 Codex Support! ⚡️** Drop the brand-new `gpt-5.1*` and `gpt-5.1-codex*` models into your Factory CLI config and VibeProxy will route them through your ChatGPT subscription automatically. Follow the updated [Factory setup](FACTORY_SETUP.md#step-3-configure-factory-cli) snippet.
@@ -44,7 +43,7 @@ Built on [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI), it handles
 
 - 🎯 **Native macOS Experience** - Clean, native SwiftUI interface that feels right at home on macOS
 - 🚀 **One-Click Server Management** - Start/stop the proxy server from your menu bar
-- 🔐 **OAuth Integration** - Authenticate with Codex, Claude Code, Gemini, and Qwen directly from the app
+- 🔐 **OAuth Integration** - Authenticate with Codex, Claude Code, Gemini, Qwen, and Antigravity directly from the app
 - 📊 **Real-Time Status** - Live connection status and automatic credential detection
 - 🔄 **Auto-Updates** - Monitors auth files and updates UI in real-time
 - 🎨 **Beautiful Icons** - Custom icons with dark mode support
@@ -75,7 +74,7 @@ Want to build it yourself? See [**INSTALLATION.md**](INSTALLATION.md) for detail
 1. Launch VibeProxy - you'll see a menu bar icon
 2. Click the icon and select "Open Settings"
 3. The server will start automatically
-4. Click "Connect" for Claude Code, Codex, Gemini, or Qwen to authenticate
+4. Click "Connect" for Claude Code, Codex, Gemini, Qwen, or Antigravity to authenticate
 
 ### Authentication
 

@@ -19,7 +19,8 @@ VibeProxy manages OAuth tokens, auto-refreshes them, routes requests, and handle
 - macOS 13.0+ (Ventura or later)
 - Active **Claude Code Pro/Max** subscription for Anthropic access
 - Active **ChatGPT Plus/Pro** subscription for OpenAI Codex access
-- **Google Cloud account** with Gemini API access (optional)
+- **Google account** for Antigravity access (provides Gemini 3 Pro models - optional)
+- **Google Cloud account** with Gemini API access for Gemini 2.x models (optional)
 - Factory CLI installed: `curl -fsSL https://app.factory.ai/cli | sh`
 
 ## Step 1: Install VibeProxy
@@ -42,9 +43,15 @@ Once VibeProxy is running:
 4. Click **"Connect"** next to Codex
    - Follow the same browser authentication process
    - Wait for VibeProxy to confirm the connection
-5. **(Optional)** Click **"Connect"** next to Gemini
+5. **(Optional)** Click **"Connect"** next to Antigravity
+   - Sign in with your Google account
+   - Grant permissions for AI model access
+   - This provides access to **Gemini 3 Pro** models
+   - VibeProxy will automatically save your credentials
+6. **(Optional)** Click **"Connect"** next to Gemini
    - Sign in with your Google account
    - Select a Google Cloud project (or accept the default)
+   - This provides access to **Gemini 2.x** models
    - VibeProxy will automatically save your credentials
 
 ✅ The server starts automatically and runs on port **8317**
@@ -71,21 +78,21 @@ Edit your Factory configuration file at `~/.factory/config.json` (if the file do
       "provider": "anthropic"
     },
     {
-      "model_display_name": "CC: Sonnet 4.5 (Think)",
+      "model_display_name": "CC: Sonnet 4.5 (Low)",
       "model": "claude-sonnet-4-5-20250929-thinking-4000",
       "base_url": "http://localhost:8317",
       "api_key": "dummy-not-used",
       "provider": "anthropic"
     },
     {
-      "model_display_name": "CC: Sonnet 4.5 (Think Harder)",
+      "model_display_name": "CC: Sonnet 4.5 (Medium)",
       "model": "claude-sonnet-4-5-20250929-thinking-10000",
       "base_url": "http://localhost:8317",
       "api_key": "dummy-not-used",
       "provider": "anthropic"
     },
     {
-      "model_display_name": "CC: Sonnet 4.5 (Ultra Think)",
+      "model_display_name": "CC: Sonnet 4.5 (High)",
       "model": "claude-sonnet-4-5-20250929-thinking-32000",
       "base_url": "http://localhost:8317",
       "api_key": "dummy-not-used",
@@ -219,8 +226,22 @@ Edit your Factory configuration file at `~/.factory/config.json` (if the file do
       "provider": "openai"
     },
     {
-      "model_display_name": "Gemini 3 Pro (SOON)",
-      "model": "gemini-3-pro-preview",
+      "model_display_name": "Gemini 3 Pro (High)",
+      "model": "gemini-3-pro-high",
+      "base_url": "http://localhost:8317/v1",
+      "api_key": "dummy-not-used",
+      "provider": "openai"
+    },
+    {
+      "model_display_name": "Gemini 3 Pro",
+      "model": "gemini-3-pro-low",
+      "base_url": "http://localhost:8317/v1",
+      "api_key": "dummy-not-used",
+      "provider": "openai"
+    },
+    {
+      "model_display_name": "Gemini 3 Pro (Image)",
+      "model": "gemini-3-pro-image",
       "base_url": "http://localhost:8317/v1",
       "api_key": "dummy-not-used",
       "provider": "openai"
@@ -277,10 +298,10 @@ Edit your Factory configuration file at `~/.factory/config.json` (if the file do
    /model
    ```
    Then choose from:
-   - `claude-sonnet-4-5-20250929` (Claude 4.5 Sonnet)
-   - `claude-opus-4-1-20250805` (Claude Opus 4.1)
+   - `claude-sonnet-4-5` (Claude 4.5 Sonnet)
+   - `claude-opus-4-1` (Claude Opus 4.1)
    - `gpt-5`, `gpt-5.1`, `gpt-5-codex`, `gpt-5.1-codex`, etc.
-   - `gemini-2.5-pro`, `gemini-3-pro-preview`, etc.
+   - `gemini-3-pro-high`, `gemini-3-pro-low`, `gemini-2.5-pro`, etc.
 
 3. **Start coding!** Factory will now route all requests through VibeProxy, which handles authentication automatically.
 
@@ -297,14 +318,24 @@ Edit your Factory configuration file at `~/.factory/config.json` (if the file do
     - `*-thinking-32000` - "Ultra think" mode (~32K tokens)
 
 ### Gemini Models
+
+**Gemini 3 Pro** (via Antigravity - requires Antigravity authentication):
+- `gemini-3-pro-high` - Gemini 3 Pro High (Maximum capability)
+- `gemini-3-pro-low` - Gemini 3 Pro (Standard - recommended)
+- `gemini-3-pro-image` - Gemini 3 Pro with enhanced vision capabilities
+
+**Gemini 2.x** (via Gemini CLI - requires Gemini authentication):
 - `gemini-2.5-pro` - Gemini 2.5 Pro (Most capable production model)
 - `gemini-2.5-flash` - Gemini 2.5 Flash (Fast and efficient)
 - `gemini-2.5-flash-lite` - Gemini 2.5 Flash Lite (Lightweight and fastest)
 
 > [!IMPORTANT]
-> **Gemini 3 Pro Preview Status**: Google's newest model (`gemini-3-pro-preview`, released Nov 18, 2025) requires the **Vertex AI API** instead of the standard Generative Language API. While the model is included in the config above, **it is not yet supported in CLIProxyAPI 6.5.1** and will return errors if used. Support is expected in an upcoming CLIProxyAPI release—likely within days.
->
-> **Get ready**: Enable the [Vertex AI API](https://console.cloud.google.com/apis/library/aiplatform.googleapis.com) in your Google Cloud project now. Once CLIProxyAPI adds support, you'll be able to use Gemini 3 Pro Preview immediately through your existing Gemini OAuth connection.
+> **Gemini 3 Pro Configuration Requirements**:
+> - **Authentication**: Gemini 3 Pro models require **Antigravity** authentication (not Gemini CLI auth)
+> - **Provider Setting**: Must use `"provider": "openai"` in Factory config (Antigravity uses OpenAI API format)
+> - **Available in**: VibeProxy v1.0.9+ with CLIProxyAPI 6.5.1+
+> 
+> Connect to Antigravity in VibeProxy Settings → Click "Connect" next to Antigravity → Sign in with your Google account. After connecting, restart VibeProxy to activate Gemini 3 Pro access.
 
 ### Qwen Models
 - `qwen3-coder-plus` - Qwen3 Coder Plus (Most capable coding model)
