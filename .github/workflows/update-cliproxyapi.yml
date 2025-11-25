@@ -88,25 +88,24 @@ jobs:
           
           # Create a temporary directory for extraction
           TEMP_DIR=$(mktemp -d)
+          # Ensure cleanup on exit (success or failure)
+          trap 'rm -rf "$TEMP_DIR"' EXIT
           echo "Using temporary directory: $TEMP_DIR"
           
           echo "Downloading $URL..."
           if ! wget -q -O "$TEMP_DIR/$FILENAME" "$URL"; then
             echo "Error: Failed to download $URL" >&2
-            rm -rf "$TEMP_DIR"
             exit 1
           fi
           
           if [ ! -s "$TEMP_DIR/$FILENAME" ]; then
              echo "Error: Downloaded file is empty" >&2
-             rm -rf "$TEMP_DIR"
              exit 1
           fi
           
           echo "Validating tarball..."
           if ! tar -tzf "$TEMP_DIR/$FILENAME" > /dev/null; then
              echo "Error: Invalid tarball" >&2
-             rm -rf "$TEMP_DIR"
              exit 1
           fi
           
@@ -126,7 +125,6 @@ jobs:
              echo "Error: Could not find binary in tarball" >&2
              echo "Tarball contents:" >&2
              tar -tf "$TEMP_DIR/$FILENAME" >&2
-             rm -rf "$TEMP_DIR"
              exit 1
           fi
           
@@ -134,7 +132,6 @@ jobs:
           
           if [ ! -f "$TEMP_DIR/$EXTRACTED_FILE" ]; then
              echo "Error: Extraction failed, $EXTRACTED_FILE not found" >&2
-             rm -rf "$TEMP_DIR"
              exit 1
           fi
           
@@ -146,13 +143,11 @@ jobs:
           
           if [ ! -f "$TARGET_FILE" ]; then
              echo "Error: Failed to copy file to $TARGET_FILE" >&2
-             rm -rf "$TEMP_DIR"
              exit 1
           fi
           
           if [ ! -s "$TARGET_FILE" ]; then
              echo "Error: Target file is empty" >&2
-             rm -rf "$TEMP_DIR"
              exit 1
           fi
 
@@ -165,7 +160,6 @@ jobs:
           FILE_SIZE=$(stat -c%s "$TARGET_FILE" 2>/dev/null || stat -f%z "$TARGET_FILE" 2>/dev/null)
           if [ -z "$FILE_SIZE" ] || [ "$FILE_SIZE" -lt 1048576 ]; then
              echo "Error: Binary file is too small (${FILE_SIZE:-0} bytes)" >&2
-             rm -rf "$TEMP_DIR"
              exit 1
           fi
           
@@ -179,10 +173,6 @@ jobs:
           fi
           
           echo "✓ Binary verification passed (${FILE_SIZE} bytes)"
-          
-          # Clean up temporary directory
-          echo "Cleaning up temporary directory..."
-          rm -rf "$TEMP_DIR"
           
           # Verify git status shows only the binary was modified
           echo "Git status:"
