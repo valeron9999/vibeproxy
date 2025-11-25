@@ -5,6 +5,38 @@ All notable changes to VibeProxy will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2025-11-25
+
+### Added
+- **Claude Opus 4.5 Support** - Full documentation for Claude's latest Opus 4.5 model
+  - Added `claude-opus-4-5-20251101` base model configuration
+  - Added extended thinking variants: `-thinking-4000`, `-thinking-10000`, `-thinking-32000`
+  - Complete setup instructions in FACTORY_SETUP.md
+  - Available through bundled CLIProxyAPI 6.5.18+
+
+### Fixed
+- **Auto-Update Workflow** - Major improvements to prevent file corruption (#47)
+  - Now uses temporary directory for tarball extraction (prevents repo contamination)
+  - Added trap-based cleanup for robust error handling
+  - Validates that only cli-proxy-api binary is modified before committing
+  - Auto-closes old unmerged bump PRs to prevent accumulation
+  - Prevents accidental deletion of README.md and LICENSE files
+- **Documentation Recovery** - Restored README.md and LICENSE files
+  - Files were accidentally deleted in auto-update PR #52
+  - Restored from v1.2.0 tag with latest Amp CLI setup guide references
+
+### Changed
+- **Workflow Reliability** - Enhanced auto-update workflow maintainability
+  - Replaced 8 manual cleanup calls with single trap handler
+  - Better error handling for all failure paths
+  - Cleaner git commits with validation checks
+
+### Technical Details
+- Auto-update workflow now extracts to `mktemp -d` temporary directory
+- Trap ensures cleanup on both success and failure
+- Git status validation prevents unintended file modifications
+- Workflow fixes prevent issues seen in PR #46 and #49
+
 ## [1.2.0] - 2025-11-22
 
 ### Added
@@ -265,6 +297,11 @@ All future changes will be documented here before release.
 
 ---
 
+[1.3.0]: https://github.com/automazeio/vibeproxy/releases/tag/v1.3.0
+[1.2.0]: https://github.com/automazeio/vibeproxy/releases/tag/v1.2.0
+[1.1.0]: https://github.com/automazeio/vibeproxy/releases/tag/v1.1.0
+[1.0.9]: https://github.com/automazeio/vibeproxy/releases/tag/v1.0.9
+[1.0.8]: https://github.com/automazeio/vibeproxy/releases/tag/v1.0.8
 [1.0.7]: https://github.com/automazeio/vibeproxy/releases/tag/v1.0.7
 [1.0.6]: https://github.com/automazeio/vibeproxy/releases/tag/v1.0.6
 [1.0.5]: https://github.com/automazeio/vibeproxy/releases/tag/v1.0.5
