@@ -108,40 +108,23 @@ jobs:
           
           TODAY=$(date +%Y-%m-%d)
           
-          # Create the new changelog entry
-          NEW_ENTRY="## [$NEW_VERSION] - $TODAY
-
-### Updated
-- **CLIProxyAPI $CLIPROXY_VERSION** - Latest upstream release (#$PR_NUMBER)
-  - Various upstream improvements and stability enhancements
-
-"
-          
-          # Insert after the header (line 7, after the semver link line)
-          sed -i "7a\\
-$NEW_ENTRY" CHANGELOG.md
-          
-          # Fix: sed on Linux adds literal \n, need to use actual newlines
-          # Re-do with proper approach
+          # Build new changelog entry
           head -n 7 CHANGELOG.md > CHANGELOG.tmp
           echo "" >> CHANGELOG.tmp
-          echo "## [$NEW_VERSION] - $TODAY" >> CHANGELOG.tmp
+          printf '%s\n' "## [${NEW_VERSION}] - ${TODAY}" >> CHANGELOG.tmp
           echo "" >> CHANGELOG.tmp
-          echo "### Updated" >> CHANGELOG.tmp
-          echo "- **CLIProxyAPI $CLIPROXY_VERSION** - Latest upstream release (#$PR_NUMBER)" >> CHANGELOG.tmp
-          echo "  - Various upstream improvements and stability enhancements" >> CHANGELOG.tmp
+          printf '%s\n' "### Updated" >> CHANGELOG.tmp
+          printf '%s\n' "- **CLIProxyAPI ${CLIPROXY_VERSION}** - Latest upstream release (#${PR_NUMBER})" >> CHANGELOG.tmp
+          printf '%s\n' "  - Various upstream improvements and stability enhancements" >> CHANGELOG.tmp
           echo "" >> CHANGELOG.tmp
           tail -n +8 CHANGELOG.md >> CHANGELOG.tmp
           mv CHANGELOG.tmp CHANGELOG.md
           
-          # Add version link at the bottom (before the first existing link)
-          # Find the line with the first version link and insert before it
-          LINK_LINE="[$NEW_VERSION]: https://github.com/automazeio/vibeproxy/releases/tag/v$NEW_VERSION"
-          sed -i "/^\[.*\]: https:\/\/github.com\/automazeio\/vibeproxy\/releases\/tag\/v/i $LINK_LINE" CHANGELOG.md
+          # Add version link at the bottom (before first existing link)
+          LINK_LINE="[${NEW_VERSION}]: https://github.com/automazeio/vibeproxy/releases/tag/v${NEW_VERSION}"
+          sed -i "0,/^\[.*\]: https:\/\/github.com\/automazeio\/vibeproxy\/releases\/tag\/v/s||${LINK_LINE}\n&|" CHANGELOG.md
           
-          echo "✅ CHANGELOG.md updated"
-          
-          # Show the changes
+          echo "CHANGELOG.md updated"
           head -n 20 CHANGELOG.md
 
       - name: Commit and tag
