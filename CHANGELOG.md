@@ -5,6 +5,13 @@ All notable changes to VibeProxy will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.6] - 2025-12-02
+
+### Fixed
+- **Auto-Update Permissions** - Added entitlements to Sparkle XPC services
+  - Allows Sparkle Installer to properly update apps in /Applications
+  - Fixes "prevented from modifying apps" error on macOS
+
 ## [1.5.5] - 2025-12-02
 
 ### Fixed
@@ -362,6 +369,7 @@ All future changes will be documented here before release.
 
 ---
 
+[1.5.6]: https://github.com/automazeio/vibeproxy/releases/tag/v1.5.6
 [1.5.5]: https://github.com/automazeio/vibeproxy/releases/tag/v1.5.5
 [1.5.4]: https://github.com/automazeio/vibeproxy/releases/tag/v1.5.4
 [1.5.3]: https://github.com/automazeio/vibeproxy/releases/tag/v1.5.3
