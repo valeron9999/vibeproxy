@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.6.6] - 2025-12-08
+
+### Updated
+- **CLIProxyAPI 6.5.55** - Latest upstream release (#76)
+  - Various upstream improvements and stability enhancements
+
+
 ## [1.6.5] - 2025-12-07
 
 ### Updated
@@ -396,6 +403,7 @@ All future changes will be documented here before release.
 
 ---
 
+[1.6.6]: https://github.com/automazeio/vibeproxy/releases/tag/v1.6.6
 [1.6.5]: https://github.com/automazeio/vibeproxy/releases/tag/v1.6.5
 [1.6.4]: https://github.com/automazeio/vibeproxy/releases/tag/v1.6.4
 [1.6.3]: https://github.com/automazeio/vibeproxy/releases/tag/v1.6.3
