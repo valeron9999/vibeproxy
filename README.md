@@ -13,7 +13,7 @@
 
 **Stop paying twice for AI.** VibeProxy is a beautiful native macOS menu bar app that lets you use your existing Claude Code, ChatGPT, **Gemini**, **Qwen**, and **Antigravity** subscriptions with powerful AI coding tools like **[Factory Droids](https://app.factory.ai/r/FM8BJHFQ)** – no separate API keys required.
 
-Built on [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI), it handles OAuth authentication, token management, and API routing automatically. One click to authenticate, zero friction to code.
+Built on [CLIProxyAPIPlus](https://github.com/router-for-me/CLIProxyAPIPlus), it handles OAuth authentication, token management, and API routing automatically. One click to authenticate, zero friction to code.
 
 
 <p align="center">
@@ -101,8 +101,8 @@ VibeProxy/
 │   └── Resources/
 │       ├── AppIcon.iconset     # App icon
 │       ├── AppIcon.icns        # App icon
-│       ├── cli-proxy-api       # CLIProxyAPI binary
-│       ├── config.yaml         # CLIProxyAPI config
+│       ├── cli-proxy-api-plus  # CLIProxyAPIPlus binary
+│       ├── config.yaml         # CLIProxyAPIPlus config
 │       ├── icon-active.png     # Menu bar icon (active)
 │       ├── icon-inactive.png   # Menu bar icon (inactive)
 │       ├── icon-claude.png     # Claude Code service icon
@@ -126,9 +126,9 @@ VibeProxy/
 
 ## Credits
 
-VibeProxy is built on top of [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI), an excellent unified proxy server for AI services.
+VibeProxy is built on top of [CLIProxyAPIPlus](https://github.com/router-for-me/CLIProxyAPIPlus), an excellent unified proxy server for AI services with support for third-party providers.
 
-Special thanks to the CLIProxyAPI project for providing the core functionality that makes VibeProxy possible.
+Special thanks to the CLIProxyAPIPlus project for providing the core functionality that makes VibeProxy possible.
 
 ## License
 
