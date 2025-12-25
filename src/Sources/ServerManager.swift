@@ -280,6 +280,19 @@ class ServerManager: ObservableObject {
                 }
             }
         }
+
+        // For Codex login, avoid blocking on the manual callback prompt after ~15s.
+        if case .codexLogin = command {
+            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 12.0) {
+                // Send newline before the prompt to keep waiting for browser callback.
+                if authProcess.isRunning {
+                    if let data = "\n".data(using: .utf8) {
+                        try? inputPipe.fileHandleForWriting.write(contentsOf: data)
+                        NSLog("[Auth] Sent newline to keep Codex login waiting for callback")
+                    }
+                }
+            }
+        }
         
         // For Qwen login, automatically send email after OAuth completes
         // NOTE: 10 second delay chosen to ensure OAuth browser flow completes before submitting email.
