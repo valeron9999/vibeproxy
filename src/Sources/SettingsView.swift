@@ -88,7 +88,7 @@ struct ServiceRow: View {
                 HStack(spacing: 4) {
                     Text("\(accounts.count) connected account\(accounts.count == 1 ? "" : "s")")
                         .font(.caption)
-                        .foregroundColor(.green)
+                        .foregroundColor(accounts.contains { $0.isExpired } ? .orange : .green)
                     
                     if accounts.count > 1 {
                         Text("• Round-robin w/ auto-failover")
