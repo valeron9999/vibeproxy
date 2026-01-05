@@ -88,7 +88,7 @@ struct ServiceRow: View {
                 HStack(spacing: 4) {
                     Text("\(accounts.count) connected account\(accounts.count == 1 ? "" : "s")")
                         .font(.caption)
-                        .foregroundColor(accounts.contains { $0.isExpired } ? .orange : .green)
+                        .foregroundColor(.green)
                     
                     if accounts.count > 1 {
                         Text("• Round-robin w/ auto-failover")
@@ -129,6 +129,16 @@ struct ServiceRow: View {
         }
         .padding(.vertical, 4)
         .help(helpText ?? "")
+        .onAppear {
+            if accounts.contains(where: { $0.isExpired }) {
+                isExpanded = true
+            }
+        }
+        .onChange(of: accounts) { _, newAccounts in
+            if newAccounts.contains(where: { $0.isExpired }) {
+                isExpanded = true
+            }
+        }
         .onChange(of: isExpanded) { _, newValue in
             onExpandChange?(newValue)
         }
