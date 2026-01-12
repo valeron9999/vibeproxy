@@ -4,17 +4,19 @@ All notable changes to VibeProxy will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.8.48] - 2026-01-12
 
 ### Added
-- **Z.AI GLM Provider Support** - Add Z.AI as a new provider for GLM models
+- **Z.AI GLM Provider Support** - Add Z.AI as a new provider for GLM models (#161)
   - Enter your Z.AI API key directly in the Settings UI
   - Supports GLM-4.7, GLM-4-Plus, GLM-4-Air, and GLM-4-Flash models
   - Get your API key at [z.ai](https://z.ai/manage-apikey/apikey-list)
   - Uses OpenAI-compatible endpoint for seamless integration
+- **Edit menu** - Added standard Edit menu for keyboard shortcuts (Cmd+C/V/X/A)
 
+### Fixed
+- **YAML escaping** - API keys with special characters are now properly escaped
 
-## [1.8.1] - 2025-12-08
 
 ## [1.8.47] - 2026-01-12
 
