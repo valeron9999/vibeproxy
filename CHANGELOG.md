@@ -6,6 +6,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [1.8.48] - 2026-01-12
 
+## [1.8.49] - 2026-01-13
+
+### Updated
+- **CLIProxyAPI 6.6.103-0** - Latest upstream release (#164)
+  - Various upstream improvements and stability enhancements
+
+
 ### Added
 - **Z.AI GLM Provider Support** - Add Z.AI as a new provider for GLM models (#161)
   - Enter your Z.AI API key directly in the Settings UI
@@ -790,6 +797,7 @@ All future changes will be documented here before release.
 
 ---
 
+[1.8.49]: https://github.com/automazeio/vibeproxy/releases/tag/v1.8.49
 [1.8.47]: https://github.com/automazeio/vibeproxy/releases/tag/v1.8.47
 [1.8.46]: https://github.com/automazeio/vibeproxy/releases/tag/v1.8.46
 [1.8.45]: https://github.com/automazeio/vibeproxy/releases/tag/v1.8.45
