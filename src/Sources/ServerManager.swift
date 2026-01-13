@@ -48,7 +48,15 @@ class ServerManager: ObservableObject {
     private var process: Process?
     @Published private(set) var isRunning = false
     private(set) var port = 8317
-    
+
+    /// Provider enabled states - when disabled, models are excluded via oauth-excluded-models
+    @Published var enabledProviders: [String: Bool] = [:] {
+        didSet {
+            // Persist to UserDefaults
+            UserDefaults.standard.set(enabledProviders, forKey: "enabledProviders")
+        }
+    }
+
     /// Helper class to capture output text across closures
     private class OutputCapture {
         var text = ""
@@ -65,8 +73,37 @@ class ServerManager: ObservableObject {
     
     var onLogUpdate: (([String]) -> Void)?
 
+    /// OAuth provider keys used in config.yaml oauth-excluded-models
+    static let oauthProviderKeys: [String: String] = [
+        "claude": "claude",
+        "codex": "codex",
+        "gemini": "gemini-cli",
+        "github-copilot": "github-copilot",
+        "antigravity": "antigravity",
+        "qwen": "qwen"
+    ]
+
     init() {
         logBuffer = RingBuffer(capacity: maxLogLines)
+        // Load persisted provider states
+        if let saved = UserDefaults.standard.dictionary(forKey: "enabledProviders") as? [String: Bool] {
+            enabledProviders = saved
+        }
+    }
+
+    /// Check if a provider is enabled (defaults to true if not set)
+    func isProviderEnabled(_ providerKey: String) -> Bool {
+        return enabledProviders[providerKey] ?? true
+    }
+
+    /// Set provider enabled state and regenerate config (hot reload - no restart needed)
+    func setProviderEnabled(_ providerKey: String, enabled: Bool) {
+        enabledProviders[providerKey] = enabled
+        addLog(enabled ? "✓ Enabled provider: \(providerKey)" : "⚠️ Disabled provider: \(providerKey)")
+
+        // Regenerate config - CLIProxyAPI hot reloads config.yaml automatically
+        _ = getConfigPath()
+        addLog("Config updated (hot reload)")
     }
     
     deinit {
@@ -80,10 +117,10 @@ class ServerManager: ObservableObject {
             completion(true)
             return
         }
-        
+
         // Clean up any orphaned processes from previous crashes
         killOrphanedProcesses()
-        
+
         // Use bundled binary from app bundle
         guard let resourcePath = Bundle.main.resourcePath else {
             addLog("❌ Error: Could not find resource path")
@@ -465,15 +502,15 @@ class ServerManager: ObservableObject {
         }
     }
     
-    /// Returns the config path to use, merging bundled config with Z.AI provider if keys exist
+    /// Returns the config path to use, merging bundled config with Z.AI provider and provider exclusions
     func getConfigPath() -> String {
         guard let resourcePath = Bundle.main.resourcePath else {
             return ""
         }
-        
+
         let bundledConfigPath = (resourcePath as NSString).appendingPathComponent("config.yaml")
         let authDir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".cli-proxy-api")
-        
+
         // Check for Z.AI auth files
         var zaiApiKeys: [String] = []
         if let files = try? FileManager.default.contentsOfDirectory(at: authDir, includingPropertiesForKeys: nil) {
@@ -485,19 +522,45 @@ class ServerManager: ObservableObject {
                 }
             }
         }
-        
-        // If no Z.AI keys, use bundled config
-        guard !zaiApiKeys.isEmpty else {
+
+        // Build list of disabled providers
+        var disabledProviders: [String] = []
+        for (serviceKey, oauthKey) in Self.oauthProviderKeys {
+            if !isProviderEnabled(serviceKey) {
+                disabledProviders.append(oauthKey)
+            }
+        }
+
+        // If no Z.AI keys and no disabled providers, use bundled config
+        guard !zaiApiKeys.isEmpty || !disabledProviders.isEmpty else {
             return bundledConfigPath
         }
-        
-        // Generate merged config with Z.AI provider
+
+        // Generate merged config
         guard let bundledContent = try? String(contentsOfFile: bundledConfigPath, encoding: .utf8) else {
             return bundledConfigPath
         }
         
-        // Build Z.AI openai-compatibility section
-        var zaiSection = """
+        var additionalConfig = ""
+
+        // Build oauth-excluded-models section for disabled providers
+        if !disabledProviders.isEmpty {
+            additionalConfig += """
+
+# Provider exclusions (auto-added by VibeProxy)
+# Disabled providers have all models excluded
+oauth-excluded-models:
+
+"""
+            for provider in disabledProviders.sorted() {
+                additionalConfig += "  \(provider):\n"
+                additionalConfig += "    - \"*\"\n"
+            }
+        }
+
+        // Build Z.AI openai-compatibility section (only if Z.AI is enabled)
+        if !zaiApiKeys.isEmpty && isProviderEnabled("zai") {
+            additionalConfig += """
 
 # Z.AI GLM Provider (auto-added by VibeProxy)
 openai-compatibility:
@@ -506,16 +569,16 @@ openai-compatibility:
     api-key-entries:
 
 """
-        for key in zaiApiKeys {
-            // Escape special YAML characters in double-quoted strings
-            let escapedKey = key
-                .replacingOccurrences(of: "\\", with: "\\\\")
-                .replacingOccurrences(of: "\"", with: "\\\"")
-                .replacingOccurrences(of: "\n", with: "\\n")
-                .replacingOccurrences(of: "\t", with: "\\t")
-            zaiSection += "      - api-key: \"\(escapedKey)\"\n"
-        }
-        zaiSection += """
+            for key in zaiApiKeys {
+                // Escape special YAML characters in double-quoted strings
+                let escapedKey = key
+                    .replacingOccurrences(of: "\\", with: "\\\\")
+                    .replacingOccurrences(of: "\"", with: "\\\"")
+                    .replacingOccurrences(of: "\n", with: "\\n")
+                    .replacingOccurrences(of: "\t", with: "\\t")
+                additionalConfig += "      - api-key: \"\(escapedKey)\"\n"
+            }
+            additionalConfig += """
     models:
       - name: "glm-4.7"
         alias: "glm-4.7"
@@ -526,8 +589,9 @@ openai-compatibility:
       - name: "glm-4-flash"
         alias: "glm-4-flash"
 """
-        
-        let mergedContent = bundledContent + zaiSection
+        }
+
+        let mergedContent = bundledContent + additionalConfig
         let mergedConfigPath = authDir.appendingPathComponent("merged-config.yaml")
         
         do {

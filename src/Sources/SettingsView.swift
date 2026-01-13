@@ -46,14 +46,16 @@ struct ServiceRow: View {
     let accounts: [AuthAccount]
     let isAuthenticating: Bool
     let helpText: String?
+    let isEnabled: Bool
     let onConnect: () -> Void
     let onDisconnect: (AuthAccount) -> Void
+    let onToggleEnabled: (Bool) -> Void
     var onExpandChange: ((Bool) -> Void)? = nil
-    
+
     @State private var isExpanded = false
     @State private var accountToRemove: AuthAccount?
     @State private var showingRemoveConfirmation = false
-    
+
     private var activeCount: Int { accounts.filter { !$0.isExpired }.count }
     private var expiredCount: Int { accounts.filter { $0.isExpired }.count }
     private let removeColor = Color(red: 0xeb/255, green: 0x0f/255, blue: 0x0f/255)
@@ -62,19 +64,36 @@ struct ServiceRow: View {
         VStack(alignment: .leading, spacing: 4) {
             // Header row
             HStack {
+                // Enable/disable toggle
+                Toggle("", isOn: Binding(
+                    get: { isEnabled },
+                    set: { onToggleEnabled($0) }
+                ))
+                .toggleStyle(.switch)
+                .controlSize(.mini)
+                .labelsHidden()
+                .help(isEnabled ? "Disable this provider" : "Enable this provider")
+
                 if let nsImage = IconCatalog.shared.image(named: iconName, resizedTo: NSSize(width: 20, height: 20), template: true) {
                     Image(nsImage: nsImage)
                         .resizable()
                         .renderingMode(.template)
                         .frame(width: 20, height: 20)
+                        .opacity(isEnabled ? 1.0 : 0.4)
                 }
                 Text(serviceType.displayName)
                     .fontWeight(.medium)
+                    .foregroundColor(isEnabled ? .primary : .secondary)
+                if !isEnabled {
+                    Text("(disabled)")
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                }
                 Spacer()
                 if isAuthenticating {
                     ProgressView()
                         .controlSize(.small)
-                } else {
+                } else if isEnabled {
                     Button("Add Account") {
                         onConnect()
                     }
@@ -82,49 +101,51 @@ struct ServiceRow: View {
                 }
             }
             
-            // Account display
-            if !accounts.isEmpty {
-                // Collapsible summary
-                HStack(spacing: 4) {
-                    Text("\(accounts.count) connected account\(accounts.count == 1 ? "" : "s")")
-                        .font(.caption)
-                        .foregroundColor(.green)
-                    
-                    if accounts.count > 1 {
-                        Text("• Round-robin w/ auto-failover")
+            // Account display (only shown when enabled)
+            if isEnabled {
+                if !accounts.isEmpty {
+                    // Collapsible summary
+                    HStack(spacing: 4) {
+                        Text("\(accounts.count) connected account\(accounts.count == 1 ? "" : "s")")
+                            .font(.caption)
+                            .foregroundColor(.green)
+
+                        if accounts.count > 1 {
+                            Text("• Round-robin w/ auto-failover")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+
+                        Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
-                    
-                    Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.leading, 28)
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        isExpanded.toggle()
-                    }
-                }
-                
-                // Expanded accounts list
-                if isExpanded {
-                    VStack(alignment: .leading, spacing: 6) {
-                        ForEach(accounts) { account in
-                            AccountRowView(account: account, removeColor: removeColor) {
-                                accountToRemove = account
-                                showingRemoveConfirmation = true
-                            }
+                    .padding(.leading, 28)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            isExpanded.toggle()
                         }
                     }
-                    .padding(.top, 4)
+
+                    // Expanded accounts list
+                    if isExpanded {
+                        VStack(alignment: .leading, spacing: 6) {
+                            ForEach(accounts) { account in
+                                AccountRowView(account: account, removeColor: removeColor) {
+                                    accountToRemove = account
+                                    showingRemoveConfirmation = true
+                                }
+                            }
+                        }
+                        .padding(.top, 4)
+                    }
+                } else {
+                    Text("No connected accounts")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .padding(.leading, 28)
                 }
-            } else {
-                Text("No connected accounts")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .padding(.leading, 28)
             }
         }
         .padding(.vertical, 4)
@@ -235,74 +256,88 @@ struct SettingsView: View {
                         accounts: authManager.accounts(for: .antigravity),
                         isAuthenticating: authenticatingService == .antigravity,
                         helpText: "Antigravity provides OAuth-based access to various AI models including Gemini and Claude. One login gives you access to multiple AI services.",
+                        isEnabled: serverManager.isProviderEnabled("antigravity"),
                         onConnect: { connectService(.antigravity) },
                         onDisconnect: { account in disconnectAccount(account) },
+                        onToggleEnabled: { enabled in serverManager.setProviderEnabled("antigravity", enabled: enabled) },
                         onExpandChange: { expanded in expandedRowCount += expanded ? 1 : -1 }
                     )
-                    
+
                     ServiceRow(
                         serviceType: .claude,
                         iconName: "icon-claude.png",
                         accounts: authManager.accounts(for: .claude),
                         isAuthenticating: authenticatingService == .claude,
                         helpText: nil,
+                        isEnabled: serverManager.isProviderEnabled("claude"),
                         onConnect: { connectService(.claude) },
                         onDisconnect: { account in disconnectAccount(account) },
+                        onToggleEnabled: { enabled in serverManager.setProviderEnabled("claude", enabled: enabled) },
                         onExpandChange: { expanded in expandedRowCount += expanded ? 1 : -1 }
                     )
-                    
+
                     ServiceRow(
                         serviceType: .codex,
                         iconName: "icon-codex.png",
                         accounts: authManager.accounts(for: .codex),
                         isAuthenticating: authenticatingService == .codex,
                         helpText: nil,
+                        isEnabled: serverManager.isProviderEnabled("codex"),
                         onConnect: { connectService(.codex) },
                         onDisconnect: { account in disconnectAccount(account) },
+                        onToggleEnabled: { enabled in serverManager.setProviderEnabled("codex", enabled: enabled) },
                         onExpandChange: { expanded in expandedRowCount += expanded ? 1 : -1 }
                     )
-                    
+
                     ServiceRow(
                         serviceType: .gemini,
                         iconName: "icon-gemini.png",
                         accounts: authManager.accounts(for: .gemini),
                         isAuthenticating: authenticatingService == .gemini,
                         helpText: "⚠️ Note: If you're an existing Gemini user with multiple projects, authentication will use your default project. Set your desired project as default in Google AI Studio before connecting.",
+                        isEnabled: serverManager.isProviderEnabled("gemini"),
                         onConnect: { connectService(.gemini) },
                         onDisconnect: { account in disconnectAccount(account) },
+                        onToggleEnabled: { enabled in serverManager.setProviderEnabled("gemini", enabled: enabled) },
                         onExpandChange: { expanded in expandedRowCount += expanded ? 1 : -1 }
                     )
-                    
+
                     ServiceRow(
                         serviceType: .copilot,
                         iconName: "icon-copilot.png",
                         accounts: authManager.accounts(for: .copilot),
                         isAuthenticating: authenticatingService == .copilot,
                         helpText: "GitHub Copilot provides access to Claude, GPT, Gemini and other models via your Copilot subscription.",
+                        isEnabled: serverManager.isProviderEnabled("github-copilot"),
                         onConnect: { connectService(.copilot) },
                         onDisconnect: { account in disconnectAccount(account) },
+                        onToggleEnabled: { enabled in serverManager.setProviderEnabled("github-copilot", enabled: enabled) },
                         onExpandChange: { expanded in expandedRowCount += expanded ? 1 : -1 }
                     )
-                    
+
                     ServiceRow(
                         serviceType: .qwen,
                         iconName: "icon-qwen.png",
                         accounts: authManager.accounts(for: .qwen),
                         isAuthenticating: authenticatingService == .qwen,
                         helpText: nil,
+                        isEnabled: serverManager.isProviderEnabled("qwen"),
                         onConnect: { showingQwenEmailPrompt = true },
                         onDisconnect: { account in disconnectAccount(account) },
+                        onToggleEnabled: { enabled in serverManager.setProviderEnabled("qwen", enabled: enabled) },
                         onExpandChange: { expanded in expandedRowCount += expanded ? 1 : -1 }
                     )
-                    
+
                     ServiceRow(
                         serviceType: .zai,
                         iconName: "icon-zai.png",
                         accounts: authManager.accounts(for: .zai),
                         isAuthenticating: authenticatingService == .zai,
                         helpText: "Z.AI GLM provides access to GLM-4.7 and other models via API key. Get your key at https://z.ai/manage-apikey/apikey-list",
+                        isEnabled: serverManager.isProviderEnabled("zai"),
                         onConnect: { showingZaiApiKeyPrompt = true },
                         onDisconnect: { account in disconnectAccount(account) },
+                        onToggleEnabled: { enabled in serverManager.setProviderEnabled("zai", enabled: enabled) },
                         onExpandChange: { expanded in expandedRowCount += expanded ? 1 : -1 }
                     )
                 }
