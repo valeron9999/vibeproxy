@@ -45,12 +45,14 @@ Built on [CLIProxyAPIPlus](https://github.com/router-for-me/CLIProxyAPIPlus), it
 
 ## Installation
 
-**⚠️ Requirements:** macOS running on **Apple Silicon only** (M1/M2/M3/M4 Macs). Intel Macs are not supported.
+**Requirements:** macOS 13+ (Ventura or later)
 
 ### Download Pre-built Release (Recommended)
 
 1. Go to the [**Releases**](https://github.com/automazeio/vibeproxy/releases) page
-2. Download the latest `VibeProxy.zip`
+2. Download the appropriate version for your Mac:
+   - **Apple Silicon** (M1/M2/M3/M4): `VibeProxy-arm64.zip`
+   - **Intel**: `VibeProxy-x86_64.zip` *(untested - please report issues)*
 3. Extract and drag `VibeProxy.app` to `/Applications`
 4. Launch VibeProxy
 
