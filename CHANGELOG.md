@@ -6,13 +6,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [1.8.50] - 2026-01-13
 
-## [1.8.51] - 2026-01-15
+## [1.8.52] - 2026-01-15
 
 ### Added
 - **Intel Mac (x86_64) support** - Separate builds now available for Intel and Apple Silicon Macs
   - Download `VibeProxy-x86_64.dmg` for Intel Macs
   - Download `VibeProxy-arm64.dmg` for Apple Silicon (M1/M2/M3)
   - ⚠️ Intel build is untested - please report if it works!
+
+
+## [1.8.51] - 2026-01-15
 
 ### Updated
 - **CLIProxyAPI 6.6.105-0** - Latest upstream release (#170)
