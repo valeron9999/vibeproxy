@@ -52,17 +52,28 @@ jobs:
           echo "Building version: ${VERSION} (build ${BUILD_NUMBER}) for ${{ matrix.arch }}"
 
       - name: Download CLIProxyAPIPlus for ${{ matrix.arch }}
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          # Get latest CLIProxyAPIPlus release
-          LATEST=$(curl -s https://api.github.com/repos/router-for-me/CLIProxyAPIPlus/releases/latest)
-          TAG=$(echo "$LATEST" | jq -r '.tag_name')
-          VERSION=$(echo "$TAG" | sed 's/^v//')
+          set -e
+          
+          # Get latest CLIProxyAPIPlus release using gh CLI (handles auth automatically)
+          echo "Fetching latest CLIProxyAPIPlus release..."
+          LATEST_TAG=$(gh release view --repo router-for-me/CLIProxyAPIPlus --json tagName -q '.tagName')
+          
+          if [ -z "$LATEST_TAG" ] || [ "$LATEST_TAG" = "null" ]; then
+            echo "Error: Failed to get latest release tag" >&2
+            exit 1
+          fi
+          
+          VERSION=${LATEST_TAG#v}
+          echo "Latest version: $VERSION (tag: $LATEST_TAG)"
           
           FILENAME="CLIProxyAPIPlus_${VERSION}_${{ matrix.cliproxy_arch }}.tar.gz"
-          URL="https://github.com/router-for-me/CLIProxyAPIPlus/releases/download/$TAG/$FILENAME"
+          URL="https://github.com/router-for-me/CLIProxyAPIPlus/releases/download/$LATEST_TAG/$FILENAME"
           
           echo "Downloading: $URL"
-          curl -L -o cliproxy.tar.gz "$URL"
+          curl -L -f -o cliproxy.tar.gz "$URL"
           
           # Extract to Resources
           mkdir -p src/Sources/Resources
@@ -75,11 +86,14 @@ jobs:
           ls -lh src/Sources/Resources/cli-proxy-api-plus
 
       - name: Download config.yaml
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          LATEST=$(curl -s https://api.github.com/repos/router-for-me/CLIProxyAPIPlus/releases/latest)
-          TAG=$(echo "$LATEST" | jq -r '.tag_name')
-          curl -L -o src/Sources/Resources/config.yaml \
-            "https://github.com/router-for-me/CLIProxyAPIPlus/releases/download/$TAG/config.yaml"
+          set -e
+          LATEST_TAG=$(gh release view --repo router-for-me/CLIProxyAPIPlus --json tagName -q '.tagName')
+          echo "Downloading config.yaml from $LATEST_TAG"
+          curl -L -f -o src/Sources/Resources/config.yaml \
+            "https://github.com/router-for-me/CLIProxyAPIPlus/releases/download/$LATEST_TAG/config.yaml"
 
       - name: Build app bundle for ${{ matrix.arch }}
         env:
