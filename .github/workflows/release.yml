@@ -109,15 +109,6 @@ jobs:
           file src/Sources/Resources/cli-proxy-api-plus
           ls -lh src/Sources/Resources/cli-proxy-api-plus
 
-      - name: Download config.yaml
-        run: |
-          set -e
-          LATEST_JSON=$(curl -s -f https://api.github.com/repos/router-for-me/CLIProxyAPIPlus/releases/latest)
-          LATEST_TAG=$(echo "$LATEST_JSON" | tr -d '\000-\037' | jq -r .tag_name)
-          echo "Downloading config.yaml from $LATEST_TAG"
-          curl -L -f -o src/Sources/Resources/config.yaml \
-            "https://github.com/router-for-me/CLIProxyAPIPlus/releases/download/$LATEST_TAG/config.yaml"
-
       - name: Build app bundle for ${{ matrix.arch }}
         env:
           CODESIGN_IDENTITY: ${{ secrets.APPLE_DEVELOPER_ID_APPLICATION }}
