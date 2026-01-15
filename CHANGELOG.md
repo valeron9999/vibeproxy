@@ -6,6 +6,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [1.8.50] - 2026-01-13
 
+## [1.8.51] - 2026-01-15
+
+### Updated
+- **CLIProxyAPI 6.6.105-0** - Latest upstream release (#170)
+  - Various upstream improvements and stability enhancements
+
+
 ### Added
 - **Provider Priority** - Enable/disable individual providers to avoid model conflicts ([#159](https://github.com/automazeio/vibeproxy/issues/159))
   - Toggle switches in Settings UI to enable/disable each provider
@@ -818,6 +825,7 @@ All future changes will be documented here before release.
 
 ---
 
+[1.8.51]: https://github.com/automazeio/vibeproxy/releases/tag/v1.8.51
 [1.8.50]: https://github.com/automazeio/vibeproxy/releases/tag/v1.8.50
 [1.8.49]: https://github.com/automazeio/vibeproxy/releases/tag/v1.8.49
 [1.8.47]: https://github.com/automazeio/vibeproxy/releases/tag/v1.8.47
