@@ -6,7 +6,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [1.8.50] - 2026-01-13
 
-## [1.8.53] - 2026-01-15
+## [1.8.54] - 2026-01-15
 
 ### Added
 - **Intel Mac (x86_64) support** - Separate builds now available for Intel and Apple Silicon Macs
