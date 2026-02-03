@@ -193,8 +193,7 @@ jobs:
             shasum -a 256 VibeProxy-${{ matrix.arch }}.dmg > VibeProxy-${{ matrix.arch }}.dmg.sha256
           fi
 
-      - name: Sign update for Sparkle (arm64 only)
-        if: matrix.arch == 'arm64'
+      - name: Sign update for Sparkle
         id: sparkle_sign
         env:
           SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
@@ -215,7 +214,7 @@ jobs:
           
           echo "ed_signature=$ED_SIGNATURE" >> $GITHUB_OUTPUT
           echo "length=$LENGTH" >> $GITHUB_OUTPUT
-          echo "Sparkle signature generated"
+          echo "Sparkle signature generated for ${{ matrix.arch }}"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -228,20 +227,18 @@ jobs:
             VibeProxy-${{ matrix.arch }}.dmg.sha256
           retention-days: 1
 
-      - name: Save Sparkle signature (arm64 only)
-        if: matrix.arch == 'arm64'
+      - name: Save Sparkle signature
         run: |
-          echo "${{ steps.sparkle_sign.outputs.ed_signature }}" > sparkle_signature.txt
-          echo "${{ steps.sparkle_sign.outputs.length }}" > sparkle_length.txt
+          echo "${{ steps.sparkle_sign.outputs.ed_signature }}" > sparkle_signature_${{ matrix.arch }}.txt
+          echo "${{ steps.sparkle_sign.outputs.length }}" > sparkle_length_${{ matrix.arch }}.txt
       
-      - name: Upload Sparkle signature (arm64 only)
-        if: matrix.arch == 'arm64'
+      - name: Upload Sparkle signature
         uses: actions/upload-artifact@v4
         with:
-          name: sparkle-signature
+          name: sparkle-signature-${{ matrix.arch }}
           path: |
-            sparkle_signature.txt
-            sparkle_length.txt
+            sparkle_signature_${{ matrix.arch }}.txt
+            sparkle_length_${{ matrix.arch }}.txt
           retention-days: 1
 
   release:
@@ -274,21 +271,27 @@ jobs:
           cp artifacts/vibeproxy-x86_64/* release/
           ls -la release/
 
-      - name: Download Sparkle signature
+      - name: Download Sparkle signatures
         uses: actions/download-artifact@v4
         with:
-          name: sparkle-signature
+          pattern: sparkle-signature-*
           path: sparkle
+          merge-multiple: true
 
-      - name: Update appcast.xml
+      - name: Update appcast files
         run: |
           VERSION="${{ steps.get_version.outputs.VERSION }}"
           BUILD_NUMBER=$(git rev-list --count HEAD)
-          ED_SIGNATURE=$(cat sparkle/sparkle_signature.txt)
-          LENGTH=$(cat sparkle/sparkle_length.txt)
           TODAY=$(date -u +"%a, %d %b %Y %H:%M:%S +0000")
           
-          cat > /tmp/new_item.xml << ENDOFITEM
+          # Read signatures for both architectures
+          ARM64_SIGNATURE=$(cat sparkle/sparkle_signature_arm64.txt)
+          ARM64_LENGTH=$(cat sparkle/sparkle_length_arm64.txt)
+          X86_64_SIGNATURE=$(cat sparkle/sparkle_signature_x86_64.txt)
+          X86_64_LENGTH=$(cat sparkle/sparkle_length_x86_64.txt)
+          
+          # Update arm64 appcast (appcast.xml - default)
+          cat > /tmp/new_item_arm64.xml << ENDOFITEM
               <item>
                 <title>Version ${VERSION}</title>
                 <sparkle:version>${BUILD_NUMBER}</sparkle:version>
@@ -297,26 +300,64 @@ jobs:
                 <pubDate>${TODAY}</pubDate>
                 <enclosure url="https://github.com/automazeio/vibeproxy/releases/download/v${VERSION}/VibeProxy-arm64.zip"
                            type="application/octet-stream"
-                           sparkle:edSignature="${ED_SIGNATURE}"
-                           length="${LENGTH}"/>
+                           sparkle:edSignature="${ARM64_SIGNATURE}"
+                           length="${ARM64_LENGTH}"/>
               </item>
           ENDOFITEM
           
-          sed -i.bak '/<language>en<\/language>/r /tmp/new_item.xml' appcast.xml
-          rm -f appcast.xml.bak /tmp/new_item.xml
+          sed -i.bak '/<language>en<\/language>/r /tmp/new_item_arm64.xml' appcast.xml
+          rm -f appcast.xml.bak /tmp/new_item_arm64.xml
           
-          echo "Updated appcast.xml with version ${VERSION}"
+          echo "Updated appcast.xml (arm64) with version ${VERSION}"
+          
+          # Create/update x86_64 appcast (appcast-x86_64.xml)
+          if [ ! -f appcast-x86_64.xml ]; then
+            # Create new x86_64 appcast from template
+            cat > appcast-x86_64.xml << 'ENDOFAPPCAST'
+          <?xml version="1.0" encoding="utf-8"?>
+          <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/">
+            <channel>
+              <title>VibeProxy Updates (Intel)</title>
+              <link>https://github.com/automazeio/vibeproxy</link>
+              <description>Most recent updates to VibeProxy for Intel Macs</description>
+              <language>en</language>
+            </channel>
+          </rss>
+          ENDOFAPPCAST
+          fi
+          
+          # Add new item to x86_64 appcast
+          cat > /tmp/new_item_x86_64.xml << ENDOFITEM
+              <item>
+                <title>Version ${VERSION}</title>
+                <sparkle:version>${BUILD_NUMBER}</sparkle:version>
+                <sparkle:shortVersionString>${VERSION}</sparkle:shortVersionString>
+                <sparkle:minimumSystemVersion>13.0</sparkle:minimumSystemVersion>
+                <pubDate>${TODAY}</pubDate>
+                <enclosure url="https://github.com/automazeio/vibeproxy/releases/download/v${VERSION}/VibeProxy-x86_64.zip"
+                           type="application/octet-stream"
+                           sparkle:edSignature="${X86_64_SIGNATURE}"
+                           length="${X86_64_LENGTH}"/>
+              </item>
+          ENDOFITEM
+          
+          sed -i.bak '/<language>en<\/language>/r /tmp/new_item_x86_64.xml' appcast-x86_64.xml
+          rm -f appcast-x86_64.xml.bak /tmp/new_item_x86_64.xml
+          
+          echo "Updated appcast-x86_64.xml with version ${VERSION}"
           head -30 appcast.xml
+          echo "---"
+          head -30 appcast-x86_64.xml
 
-      - name: Commit appcast.xml
+      - name: Commit appcast files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git fetch origin main
           git checkout main
           git pull origin main
-          git add appcast.xml
-          git commit -m "Update appcast.xml for v${{ steps.get_version.outputs.VERSION }}" || echo "No changes to commit"
+          git add appcast.xml appcast-x86_64.xml
+          git commit -m "Update appcast files for v${{ steps.get_version.outputs.VERSION }}" || echo "No changes to commit"
           git push origin main
 
       - name: Create Release
